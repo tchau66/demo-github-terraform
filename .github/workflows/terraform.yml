@@ -11,11 +11,6 @@ permissions:
 jobs:
   terraform:
     name: 'Terraform'
-    env:
-        #AWS_secrets
-        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_DEVOPS_ACCESS_KEY_ID }}
-        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_DEVOPS_SECRET_ACCESS_KEY }}
-
     runs-on: ubuntu-latest
     
 
@@ -24,10 +19,17 @@ jobs:
       run:
         shell: bash
 
+
     steps:
     # Checkout the repository to the GitHub Actions runner
     - name: Checkout
       uses: actions/checkout@v4
+
+    - name: Add profile credentials to ~/.aws/credentials
+      run: |
+        aws configure set AWS_ACCESS_KEY_ID: ${{ secrets.AWS_DEVOPS_ACCESS_KEY_ID }} --profile vscode
+        aws configure set AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_DEVOPS_SECRET_ACCESS_KEY }} --profile vscode
+
 
     # Initialize a new or existing Terraform working directory by creating initial files, loading any remote state, downloading modules, etc.
     - name: Terraform Init
@@ -35,7 +37,6 @@ jobs:
       with:
         tf_actions_version: 1.9.8
         tf_actions_subcommand: 'init'
-        tf_actions_working_dir: '.'
         tf_actions_comment : true
      
     # Checks that all Terraform configuration files adhere to a canonical format
@@ -48,7 +49,6 @@ jobs:
       with:
         tf_actions_version: 1.9.8
         tf_actions_subcommand: 'plan'
-        tf_actions_working_dir: '.'
         tf_actions_comment : true
 
     # Generates an execution plan for Terraform
@@ -57,7 +57,6 @@ jobs:
       with:
         tf_actions_version: 1.9.8
         tf_actions_subcommand: 'apply'
-        tf_actions_working_dir: '.'
         tf_actions_comment : true  
 
 
